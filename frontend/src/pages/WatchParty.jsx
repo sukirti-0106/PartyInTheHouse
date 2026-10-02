@@ -123,7 +123,7 @@ const WatchParty = () => {
 
     useEffect(() => {
         const socket = io(
-            "http://localhost:8080",
+            "https://partyinthehouse.onrender.com",
             {
                 auth: {
                     token: token || null,
