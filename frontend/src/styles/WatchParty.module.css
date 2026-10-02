@@ -1,0 +1,1048 @@
+* {
+    box-sizing: border-box;
+}
+
+.page {
+    width: 100%;
+    min-height: 100vh;
+    background: #050505;
+    color: white;
+    overflow-x: hidden;
+    overflow-y: visible;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.container {
+    width: 100%;
+    min-height: 100vh;
+    padding: 8px 28px 24px;
+    overflow: visible;
+}
+
+.header {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 27px;
+    font-weight: 700;
+    color: white;
+}
+
+.logoIcon {
+    font-size: 29px;
+}
+
+.roomInfo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+    font-size: 14px;
+}
+
+.roomId {
+    padding: 9px 14px;
+    border-radius: 10px;
+    background: #181920;
+    border: 1px solid #30313a;
+    font-weight: 700;
+}
+
+.youAre {
+    font-weight: 600;
+}
+
+.youAre strong {
+    color: white;
+}
+
+.error {
+    margin: 9px 0;
+    padding: 9px 13px;
+    background: #35151b;
+    border: 1px solid #70232e;
+    border-radius: 8px;
+    color: #ffb7bf;
+}
+
+.vibeBar {
+    position: relative;
+    height: 66px;
+    margin-top: 10px;
+    padding: 9px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    background: rgba(17,17,22,0.95);
+    border: 1px solid #292b35;
+    border-radius: 13px;
+}
+
+.vibeTitle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    font-weight: 700;
+}
+
+.selectedVibe {
+    padding: 9px 14px;
+    border-radius: 9px;
+    background: #1b1d26;
+    border: 1px solid #343744;
+    white-space: nowrap;
+}
+
+.vibeOptions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 7px;
+    flex-wrap: nowrap;
+    min-width: 0;
+}
+
+.vibeButton {
+    height: 40px;
+    padding: 0 13px;
+    border: 1px solid #292c35;
+    border-radius: 10px;
+    background: #101116;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.vibeButton:hover {
+    background: #1b1d26;
+}
+
+.activeVibe {
+    background: #1c1f29;
+    border-color: #687080;
+}
+
+.moodPopup {
+    position: absolute;
+    top: 73px;
+    left: 175px;
+    width: 370px;
+    padding: 16px 40px 16px 19px;
+    background: #1b1d26;
+    border: 1px solid #444753;
+    border-radius: 12px;
+    z-index: 50;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+}
+
+.moodPopup strong {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 16px;
+}
+
+.moodPopup p {
+    margin: 0;
+    color: #c6c7cd;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.popupClose {
+    position: absolute;
+    top: 8px;
+    right: 11px;
+    border: none;
+    background: transparent;
+    color: #d8d9df;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.main {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 18px;
+    margin-top: 13px;
+    align-items: start;
+    min-width: 0;
+}
+
+.videoSection {
+    min-width: 0;
+    width: 100%;
+    overflow: visible;
+}
+
+.videoCard {
+    width: 100%;
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 9px;
+    background: rgba(8,8,11,0.94);
+    border: 1px solid #292c35;
+    border-radius: 13px;
+    overflow: hidden;
+}
+
+.video {
+    width: 100%;
+    height: 52vh;
+    min-height: 340px;
+    max-height: 500px;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.video iframe {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+    border: none;
+}
+
+.controls {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 0 7px;
+}
+
+.button {
+    min-height: 39px;
+    padding: 0 15px;
+    border: 1px solid #30333d;
+    border-radius: 9px;
+    background: #171922;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.button:hover:not(:disabled) {
+    background: #242733;
+}
+
+/* Disabled playback buttons */
+.button:disabled,
+.primaryButton:disabled,
+.disabledButton {
+    background: #2a2c33 !important;
+    color: #777b86 !important;
+    border-color: #383b44 !important;
+    opacity: 1 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+}
+
+.button:disabled:hover,
+.primaryButton:disabled:hover,
+.disabledButton:hover {
+    background: #2a2c33 !important;
+    color: #777b86 !important;
+    border-color: #383b44 !important;
+}
+
+.primaryButton {
+    background: #f3f3f3;
+    color: #111;
+    border-color: #f3f3f3;
+}
+
+.primaryButton:hover:not(:disabled) {
+    background: #ffffff;
+}
+
+.changeVideo {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 145px;
+    gap: 9px;
+}
+
+.input {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid #30333d;
+    border-radius: 9px;
+    outline: none;
+    background: #0d0e12;
+    color: white;
+    font-size: 13px;
+}
+
+.input::placeholder {
+    color: #777b86;
+}
+
+.input:focus {
+    border-color: #555b6c;
+}
+
+.sidebar {
+    width: 100%;
+    min-width: 0;
+    height: calc(100vh - 158px);
+    max-height: 700px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 16px;
+    background: rgba(5,5,8,0.98);
+    border: 1px solid #292c35;
+    border-radius: 13px;
+    scrollbar-width: thin;
+    scrollbar-color: #383b45 transparent;
+}
+
+.sidebarHeader {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 13px;
+    border-bottom: 1px solid #292c35;
+}
+
+.sidebarHeader h2 {
+    margin: 0;
+    font-size: 23px;
+}
+
+.closeSidebar {
+    width: 31px;
+    height: 31px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: white;
+    font-size: 25px;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.closeSidebar:hover {
+    color: #bfc3ff;
+}
+
+.sidebarTabs {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    padding: 5px;
+    margin: 13px 0 5px;
+    background: #0d0e12;
+    border: 1px solid #292c35;
+    border-radius: 9px;
+}
+
+.sidebarTab {
+    height: 36px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: #8f929c;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.sidebarTab:hover {
+    color: white;
+    background: #181a21;
+}
+
+.activeTab {
+    background: #242732;
+    color: white;
+}
+
+.tabContent {
+    width: 100%;
+    padding-top: 15px;
+}
+
+.sidebarSection {
+    padding: 15px 0;
+    border-bottom: 1px solid #292c35;
+}
+
+.sidebarSection:last-child {
+    border-bottom: none;
+}
+
+.sectionTitle {
+    margin: 0 0 11px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 15px;
+}
+
+.count {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #292d3b;
+}
+
+.participant {
+    width: 100%;
+    padding: 11px;
+    margin-bottom: 8px;
+    background: #17191f;
+    border: 1px solid #292c35;
+    border-radius: 9px;
+}
+
+.participantName {
+    font-weight: 700;
+    margin-bottom: 4px;
+    word-break: break-word;
+}
+
+/* Only Host and Moderator get a role label */
+.role {
+    display: inline-block;
+    color: #bfc1ca;
+    font-size: 12px;
+}
+
+.participantActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 9px;
+}
+
+.smallButton {
+    padding: 5px 7px;
+    border: 1px solid #343743;
+    border-radius: 7px;
+    background: #111217;
+    color: white;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+.smallButton:hover {
+    background: #242631;
+}
+
+.chat {
+    width: 100%;
+    height: 310px;
+    overflow-y: auto;
+    padding: 11px;
+    border: 1px solid #292c35;
+    border-radius: 9px;
+    background: #050507;
+}
+
+.emptyChat {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 5px;
+    text-align: center;
+}
+
+.emptyChat div {
+    color: #4d8cff;
+    font-size: 21px;
+}
+
+.emptyChat strong {
+    font-size: 12px;
+}
+
+.emptyChat span {
+    color: #8d909a;
+    font-size: 10px;
+}
+
+.message {
+    margin: 0 0 7px;
+    font-size: 12px;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.chatForm {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 60px;
+    gap: 6px;
+    margin-top: 7px;
+}
+
+.chatInput {
+    width: 100%;
+    min-width: 0;
+    height: 40px;
+    padding: 0 10px;
+    border: 1px solid #292c35;
+    border-radius: 8px;
+    background: #0b0c10;
+    color: white;
+    outline: none;
+    font-size: 12px;
+}
+
+.chatInput::placeholder {
+    color: #777b86;
+}
+
+.chatInput:focus {
+    border-color: #555b6c;
+}
+
+.sendButton {
+    height: 40px;
+    border: none;
+    border-radius: 8px;
+    background: #f4f4f4;
+    color: #111;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.sendButton:hover {
+    background: white;
+}
+
+.reactionSection {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #292c35;
+}
+
+.reactions {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+}
+
+.reactionButton {
+    width: 49px;
+    height: 43px;
+    border: 1px solid #30333d;
+    border-radius: 8px;
+    background: #171920;
+    font-size: 19px;
+    cursor: pointer;
+}
+
+.reactionButton:hover {
+    background: #282b35;
+    transform: translateY(-1px);
+}
+
+.reactionDisplay {
+    display: flex;
+    gap: 7px;
+    margin-top: 9px;
+    min-height: 24px;
+    flex-wrap: wrap;
+}
+
+.reactionDisplay span {
+    font-size: 22px;
+}
+
+.fullViewVideoWrapper {
+    position: relative;
+    width: 100%;
+    isolation: isolate;
+}
+
+.fullViewVideoWrapper .video {
+    position: relative;
+    z-index: 1;
+}
+
+.videoReactions {
+    position: absolute;
+    top: 15px;
+    left: 0;
+    width: 100%;
+    height: 90%;
+    z-index: 20;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 12px;
+    pointer-events: none;
+    overflow: visible;
+}
+
+.videoReactions span {
+    display: block;
+    font-size: 34px;
+    animation: reactionFloat 2.5s ease-out forwards;
+    filter: drop-shadow(0 2px 5px rgba(0,0,0,0.7));
+}
+
+@keyframes reactionFloat {
+    0% {
+        transform: translateY(45px) scale(0.7);
+        opacity: 0;
+    }
+
+    15% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(-90px) scale(1.15);
+        opacity: 0;
+    }
+}
+
+.queueInput {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.queueInput input {
+    min-width: 0;
+    flex: 1;
+}
+
+.emptyQueue {
+    padding: 12px;
+    border: 1px solid #292c35;
+    border-radius: 8px;
+    color: #8b8f9a;
+    font-size: 12px;
+    text-align: center;
+}
+
+.queueList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.queueItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 9px 10px;
+    border: 1px solid #292c35;
+    border-radius: 8px;
+    background: rgba(20,21,27,0.7);
+}
+
+.queueInfo {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.queueNumber {
+    min-width: 20px;
+    color: #8b8f9a;
+    font-size: 12px;
+}
+
+.queueVideo {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #e7e8ec;
+    font-size: 12px;
+}
+
+.queueRemove {
+    border: none;
+    background: transparent;
+    color: #8b8f9a;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.queueRemove:hover {
+    color: white;
+}
+
+.leaveButton {
+    width: 100%;
+    height: 40px;
+    border: 1px solid #673039;
+    border-radius: 8px;
+    background: #291317;
+    color: #ffb8bf;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.leaveButton:hover {
+    background: #3a191e;
+}
+
+.openSidebar {
+    position: fixed;
+    right: 20px;
+    top: 135px;
+    z-index: 100;
+    padding: 9px 15px;
+    border: 1px solid #343743;
+    border-radius: 9px;
+    background: #171922;
+    color: white;
+    cursor: pointer;
+}
+
+.sidebarClosed .main {
+    grid-template-columns: 1fr;
+}
+
+.sidebarClosed .videoCard {
+    max-width: 1060px;
+}
+
+.normal {
+    background: #050505;
+}
+
+.movieNight,
+.lateNight,
+.party,
+.romantic,
+.chill,
+.workplace {
+    min-height: 100vh;
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+}
+
+.movieNight {
+    background-image: url("/movie-night.jpg");
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+.lateNight {
+    background-image: url("/night-sky.jpg");
+}
+
+.party {
+    background-image: url("/party.jpg");
+}
+
+.romantic {
+    background-image: url("/romantic.jpg");
+}
+
+.chill {
+    background-image: url("/chill.jpg");
+}
+
+.workplace {
+    background-image: url("/office.jpg");
+}
+
+.movieNight .videoCard,
+.lateNight .videoCard,
+.party .videoCard,
+.romantic .videoCard,
+.chill .videoCard,
+.workplace .videoCard {
+    background: rgba(5,5,8,0.88);
+}
+
+.movieNight .video,
+.lateNight .video,
+.party .video,
+.romantic .video,
+.chill .video,
+.workplace .video {
+    background: #000;
+}
+
+.fullView {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    min-height: 100vh;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.fullView .container {
+    width: 100%;
+    height: 100%;
+    min-height: 100vh;
+    padding: 0;
+}
+
+.fullView .header,
+.fullView .vibeBar,
+.fullView .sidebar,
+.fullView .openSidebar {
+    display: none;
+}
+
+.fullView .main {
+    width: 100%;
+    height: 100vh;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0;
+    padding: 20px;
+}
+
+.fullView .videoSection {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fullView .videoCard {
+    position: relative;
+    width: 78%;
+    max-width: 1150px;
+    margin: 0 auto;
+    padding: 9px;
+    background: rgba(5,5,8,0.90);
+    border: 1px solid #292c35;
+    border-radius: 13px;
+}
+
+.fullView .video {
+    width: 100%;
+    height: 430px;
+    aspect-ratio: auto;
+    min-height: 0;
+    max-height: 430px;
+}
+
+.movieNight.fullView .videoCard {
+    width: 78%;
+    max-width: 1150px;
+    transform: translateY(-85px);
+}
+
+.movieNight.fullView .video {
+    width: 100%;
+    height: 400px;
+    max-height: 430px;
+}
+
+.exitFullView {
+    position: fixed;
+    top: 18px;
+    right: 20px;
+    z-index: 10000;
+    min-height: 38px;
+    padding: 0 14px;
+    border: 1px solid #3b3e49;
+    border-radius: 9px;
+    background: rgba(20,21,27,0.9);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.exitFullView:hover {
+    background: #282b35;
+}
+
+@media (max-width: 1200px) {
+    .container {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .main {
+        grid-template-columns: minmax(0, 1fr) 310px;
+    }
+
+    .vibeButton {
+        padding: 0 10px;
+        font-size: 12px;
+    }
+
+    .video {
+        height: 50vh;
+        max-height: 470px;
+    }
+}
+
+@media (max-width: 1000px) {
+    .vibeBar {
+        height: auto;
+        min-height: 66px;
+        flex-wrap: wrap;
+    }
+
+    .vibeOptions {
+        width: 100%;
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 3px;
+    }
+
+    .main {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        height: auto;
+        max-height: 600px;
+    }
+
+    .video {
+        height: 50vw;
+        max-height: 470px;
+    }
+}
+
+@media (max-width: 700px) {
+    .container {
+        padding: 7px 10px 18px;
+    }
+
+    .header {
+        height: 60px;
+        padding: 0 5px;
+    }
+
+    .logo {
+        font-size: 21px;
+    }
+
+    .logoIcon {
+        font-size: 24px;
+    }
+
+    .roomInfo {
+        gap: 6px;
+        font-size: 12px;
+    }
+
+    .roomInfo .youAre {
+        display: none;
+    }
+
+    .vibeBar {
+        padding: 9px;
+    }
+
+    .vibeTitle {
+        width: 100%;
+    }
+
+    .videoCard {
+        padding: 7px;
+    }
+
+    .video {
+        height: 52vw;
+        min-height: 220px;
+        max-height: 400px;
+    }
+
+    .controls {
+        flex-wrap: wrap;
+    }
+
+    .changeVideo {
+        grid-template-columns: 1fr;
+    }
+
+    .moodPopup {
+        left: 10px;
+        width: calc(100% - 20px);
+    }
+
+    .sidebarTabs {
+        gap: 3px;
+    }
+
+    .sidebarTab {
+        height: 34px;
+        font-size: 11px;
+    }
+
+    .tabContent .chat {
+        height: 250px;
+    }
+
+    .fullView .main {
+        padding: 8px;
+    }
+
+    .fullView .videoCard {
+        width: 94%;
+    }
+
+    .fullView .video {
+        height: 320px;
+        max-height: 320px;
+    }
+
+    .movieNight.fullView .videoCard {
+        width: 94%;
+        transform: translateY(-40px);
+    }
+
+    .movieNight.fullView .video {
+        height: 320px;
+        max-height: 320px;
+    }
+
+    .videoReactions {
+        top: 10px;
+    }
+
+    .videoReactions span {
+        font-size: 26px;
+    }
+
+    .exitFullView {
+        top: 10px;
+        right: 10px;
+    }
+}

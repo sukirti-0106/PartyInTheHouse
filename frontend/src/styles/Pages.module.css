@@ -1,0 +1,500 @@
+.page {
+    min-height: 100vh;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 40px 55px 70px;
+    color: white;
+    background:
+        radial-gradient(
+            circle at 10% 10%,
+            rgba(120, 90, 255, 0.18),
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 90% 80%,
+            rgba(255, 90, 160, 0.12),
+            transparent 30%
+        ),
+        #101014;
+    position: relative;
+    overflow: visible;
+}
+
+.page::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+        linear-gradient(
+            120deg,
+            rgba(255, 255, 255, 0.02),
+            transparent 40%,
+            rgba(255, 255, 255, 0.02)
+        );
+    pointer-events: none;
+    z-index: 0;
+}
+
+.container {
+    width: 100%;
+    max-width: 1180px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+/* HEADER */
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 25px;
+    margin-bottom: 0;
+}
+
+.logo {
+    font-size: 25px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: white;
+}
+
+/* TOP ACTIONS */
+
+.topActions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+/* WELCOME */
+
+.welcome {
+    margin-top: 50px;
+    margin-bottom: 0;
+}
+
+.welcome h2 {
+    margin: 0 0 8px;
+    font-size: 27px;
+    font-weight: 600;
+}
+
+.welcome p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 14px;
+}
+
+/* CREATE ROOM */
+
+.createSection {
+    margin-top: 28px;
+}
+
+.createSection .primaryButton {
+    min-width: 150px;
+}
+
+/* BUTTONS */
+
+.primaryButton {
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 11px;
+    padding: 13px 21px;
+    background: white;
+    color: #111;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+.primaryButton:hover {
+    transform: translateY(-2px);
+    background: #f0f0f0;
+    box-shadow: 0 10px 25px rgba(255, 255, 255, 0.10);
+}
+
+.secondaryButton {
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+    padding: 11px 18px;
+    background: rgba(255, 255, 255, 0.07);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: 0.2s ease;
+}
+
+.secondaryButton:hover {
+    background: rgba(255, 255, 255, 0.13);
+    transform: translateY(-1px);
+}
+
+.logout {
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    padding: 11px 18px;
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.85);
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s ease;
+}
+
+.logout:hover {
+    background: rgba(255, 80, 100, 0.15);
+    border-color: rgba(255, 100, 120, 0.3);
+}
+
+/* JOIN ROOM */
+
+.joinBox {
+    margin-top: 45px;
+    padding: 28px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.055);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.22);
+}
+
+.joinBox h3 {
+    margin: 0 0 18px;
+    font-size: 18px;
+}
+
+.joinForm {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+}
+
+.joinForm .input {
+    flex: 1;
+    min-width: 0;
+}
+
+.joinForm .primaryButton {
+    flex-shrink: 0;
+}
+
+/* INPUT */
+
+.input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    outline: none;
+    background: rgba(0, 0, 0, 0.25);
+    color: white;
+    font-size: 14px;
+    transition: 0.2s ease;
+}
+
+.input::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.input:focus {
+    border-color: rgba(255, 255, 255, 0.45);
+    background: rgba(0, 0, 0, 0.35);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+}
+
+/* MESSAGE */
+
+.message {
+    margin: 15px 0 0;
+    padding: 11px 14px;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 13px;
+}
+
+/* ROOMS */
+
+.roomSection {
+    margin-top: 55px;
+    padding-bottom: 30px;
+}
+
+.roomSection h2 {
+    margin: 0 0 22px;
+    font-size: 24px;
+}
+
+.roomGrid {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fill,
+        minmax(260px, 1fr)
+    );
+    gap: 20px;
+}
+
+.roomCard {
+    position: relative;
+    padding: 24px;
+    min-height: 150px;
+    box-sizing: border-box;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 17px;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.09),
+            rgba(255, 255, 255, 0.035)
+        );
+    backdrop-filter: blur(15px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.22);
+    transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.roomCard::before {
+    content: "";
+    position: absolute;
+    width: 130px;
+    height: 130px;
+    right: -50px;
+    top: -50px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.07);
+    filter: blur(5px);
+}
+
+.roomCard:hover {
+    transform: translateY(-5px);
+    border-color: rgba(255, 255, 255, 0.22);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.32);
+}
+
+.roomCard h3 {
+    position: relative;
+    margin: 0 0 14px;
+    font-size: 19px;
+}
+
+.roomCard p {
+    position: relative;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.50);
+    font-size: 13px;
+}
+
+.roomCard .primaryButton {
+    position: relative;
+    margin-top: 22px;
+    width: 100%;
+}
+
+/* EMPTY ROOMS */
+
+.empty {
+    padding: 45px 20px;
+    text-align: center;
+    border-radius: 16px;
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.035);
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.empty p {
+    margin: 6px 0;
+}
+
+/* CREATE / JOIN FORM PAGE */
+
+.formContainer {
+    width: 100%;
+    max-width: 500px;
+    margin: 80px auto;
+    padding: 38px;
+    box-sizing: border-box;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.30);
+}
+
+.formContainer h1 {
+    margin: 0 0 10px;
+    font-size: 30px;
+}
+
+.formContainer > p {
+    margin: 0 0 30px;
+    color: rgba(255, 255, 255, 0.52);
+    font-size: 14px;
+}
+
+/* FORM */
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.inputGroup label {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.75);
+    font-weight: 600;
+}
+
+.form .primaryButton {
+    margin-top: 5px;
+    padding: 15px 24px;
+    min-height: 48px;
+    width: 100%;
+}
+
+.backButton {
+    margin-top: 22px;
+}
+
+/* HISTORY */
+
+.historyList {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-bottom: 40px;
+}
+
+.historyCard {
+    padding: 23px 25px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: rgba(255, 255, 255, 0.055);
+    backdrop-filter: blur(14px);
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+    flex-shrink: 0;
+}
+
+.historyCard:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(3px);
+}
+
+.historyCard h3 {
+    margin: 0 0 13px;
+    font-size: 18px;
+}
+
+.historyCard p {
+    margin: 7px 0;
+    color: rgba(255, 255, 255, 0.52);
+    font-size: 13px;
+}
+
+/* MOBILE */
+
+@media (max-width: 800px) {
+
+    .page {
+        padding: 30px 20px 60px;
+    }
+
+    .header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .topActions {
+        width: 100%;
+        gap: 10px;
+    }
+
+    .joinForm {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .joinForm .primaryButton {
+        width: 100%;
+    }
+
+    .roomGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .formContainer {
+        margin: 40px auto;
+        padding: 28px 22px;
+    }
+}
+
+@media (max-width: 500px) {
+
+    .page {
+        padding: 25px 15px 60px;
+    }
+
+    .logo {
+        font-size: 22px;
+    }
+
+    .welcome {
+        margin-top: 40px;
+    }
+
+    .welcome h2 {
+        font-size: 23px;
+    }
+
+    .joinBox {
+        padding: 20px;
+    }
+
+    .roomCard {
+        padding: 20px;
+    }
+
+    .formContainer {
+        margin: 30px auto;
+        padding: 25px 18px;
+    }
+
+    .topActions {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .topActions button {
+        width: 100%;
+    }
+
+    .createSection .primaryButton {
+        width: 100%;
+    }
+}

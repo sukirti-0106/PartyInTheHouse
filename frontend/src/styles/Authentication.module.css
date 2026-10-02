@@ -1,0 +1,904 @@
+.authPage {
+    min-height: 100vh;
+    width: 100%;
+    position: relative;
+    overflow-x: hidden;
+    color: white;
+    font-family: Arial, sans-serif;
+    background: #111;
+}
+
+.backgroundWrapper {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.background {
+    position: absolute;
+    inset: -30px;
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    opacity: 0;
+
+    transform: scale(1.08);
+
+    transition: opacity 1.5s ease-in-out;
+
+    filter: blur(4px);
+}
+
+.activeBackground {
+    opacity: 1;
+
+    animation: backgroundMove 12s ease-in-out infinite alternate;
+}
+
+.overlay {
+    position: absolute;
+    inset: 0;
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(0, 0, 0, 0.80) 0%,
+            rgba(0, 0, 0, 0.52) 45%,
+            rgba(0, 0, 0, 0.70) 100%
+        );
+}
+
+/* Navbar */
+
+.navbar {
+    position: fixed;
+
+    top: 0;
+    left: 0;
+    right: 0;
+
+    height: 72px;
+
+    padding: 0 50px;
+
+    box-sizing: border-box;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    z-index: 10;
+
+    background: rgba(0, 0, 0, 0.20);
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.navLogo {
+    font-size: 22px;
+
+    font-weight: 800;
+
+    letter-spacing: 0.5px;
+
+    color: white;
+}
+
+.navButtons {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+}
+
+.navButton {
+    padding: 9px 19px;
+
+    border: 1px solid rgba(255, 255, 255, 0.30);
+
+    border-radius: 9px;
+
+    background: rgba(255, 255, 255, 0.08);
+
+    color: white;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border 0.2s ease,
+        transform 0.2s ease;
+}
+
+.navButton:hover {
+    background: rgba(255, 255, 255, 0.18);
+
+    border-color: rgba(255, 255, 255, 0.50);
+
+    transform: translateY(-1px);
+}
+
+/* Main Content */
+
+.content {
+    position: relative;
+
+    z-index: 2;
+
+    min-height: 100vh;
+
+    width: 100%;
+
+    max-width: 1350px;
+
+    margin: 0 auto;
+
+    padding: 110px 50px 70px;
+
+    box-sizing: border-box;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 65px;
+}
+
+/* Left Side */
+
+.intro {
+    max-width: 590px;
+
+    animation: fadeUp 1s ease;
+}
+
+.smallText {
+    margin: 0 0 12px;
+
+    font-size: 14px;
+
+    letter-spacing: 5px;
+
+    font-weight: 600;
+
+    opacity: 0.8;
+}
+
+.intro h1 {
+    margin: 0;
+
+    font-size: clamp(50px, 7vw, 88px);
+
+    line-height: 0.95;
+
+    letter-spacing: -3px;
+
+    font-weight: 800;
+}
+
+.tagline {
+    margin: 28px 0 12px;
+
+    font-size: 28px;
+
+    font-weight: 600;
+}
+
+.description {
+    margin: 0;
+
+    font-size: 18px;
+
+    line-height: 1.7;
+
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.featureText {
+    margin-top: 35px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    flex-wrap: wrap;
+
+    font-size: 14px;
+
+    color: rgba(255, 255, 255, 0.72);
+}
+
+/* Create / Join Container */
+
+.roomOptions {
+    width: 620px;
+
+    max-width: 100%;
+
+    box-sizing: border-box;
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    position: relative;
+
+    padding: 32px;
+
+    border: 1px solid rgba(255, 255, 255, 0.25);
+
+    border-radius: 24px;
+
+    background: rgba(255, 255, 255, 0.11);
+
+    backdrop-filter: blur(18px);
+
+    -webkit-backdrop-filter: blur(18px);
+
+    box-shadow:
+        0 25px 60px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+
+    animation: cardAppear 0.9s ease;
+}
+
+/* Vertical line between Create and Join */
+
+.roomOptions::after {
+    content: "";
+
+    position: absolute;
+
+    top: 32px;
+
+    bottom: 32px;
+
+    left: 50%;
+
+    width: 1px;
+
+    background: rgba(255, 255, 255, 0.16);
+}
+
+/* Individual Create / Join */
+
+.roomCard {
+    padding: 5px 25px;
+
+    box-sizing: border-box;
+}
+
+.roomCard:first-child {
+    padding-left: 0;
+    padding-right: 35px;
+}
+
+.roomCard:last-child {
+    padding-left: 35px;
+    padding-right: 0;
+}
+
+.roomCard h2 {
+    margin: 0 0 9px;
+
+    font-size: 23px;
+
+    font-weight: 700;
+}
+
+.roomCard p {
+    margin: 0 0 24px;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+
+    color: rgba(255, 255, 255, 0.65);
+}
+
+/* Room Inputs */
+
+.roomCard input {
+    display: block;
+
+    width: 100%;
+
+    height: 45px;
+
+    padding: 0 14px;
+
+    margin-bottom: 13px;
+
+    box-sizing: border-box;
+
+    border: 1px solid rgba(255, 255, 255, 0.20);
+
+    border-radius: 9px;
+
+    outline: none;
+
+    background: rgba(0, 0, 0, 0.28);
+
+    color: white;
+
+    font-size: 13px;
+
+    font-family: Arial, sans-serif;
+
+    transition:
+        border 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.roomCard input::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.roomCard input:hover {
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+.roomCard input:focus {
+    border-color: rgba(255, 255, 255, 0.65);
+
+    background: rgba(0, 0, 0, 0.38);
+
+    box-shadow:
+        0 0 0 3px rgba(255, 255, 255, 0.07);
+}
+
+/* Buttons */
+
+.submitButton {
+    width: 100%;
+
+    height: 45px;
+
+    margin-top: 3px;
+
+    padding: 0 14px;
+
+    border: none;
+
+    border-radius: 9px;
+
+    background: white;
+
+    color: #171717;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    font-family: Arial, sans-serif;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+.submitButton:hover {
+    transform: translateY(-2px);
+
+    background: #f1f1f1;
+
+    box-shadow:
+        0 10px 25px rgba(0, 0, 0, 0.28);
+}
+
+.submitButton:active {
+    transform: translateY(0);
+}
+
+/* Authentication Card */
+
+.authCard {
+    position: relative;
+
+    width: 390px;
+
+    max-width: 100%;
+
+    padding: 38px;
+
+    box-sizing: border-box;
+
+    border: 1px solid rgba(255, 255, 255, 0.25);
+
+    border-radius: 22px;
+
+    background: rgba(255, 255, 255, 0.12);
+
+    backdrop-filter: blur(18px);
+
+    -webkit-backdrop-filter: blur(18px);
+
+    box-shadow:
+        0 25px 60px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+
+    animation: cardAppear 0.4s ease;
+}
+
+/* Close Button */
+
+.closeButton {
+    position: absolute;
+
+    top: 14px;
+
+    right: 15px;
+
+    width: 32px;
+
+    height: 32px;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.10);
+
+    color: white;
+
+    font-size: 21px;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.closeButton:hover {
+    background: rgba(255, 255, 255, 0.20);
+
+    transform: rotate(90deg);
+}
+
+/* Auth Form */
+
+.cardHeader {
+    margin-bottom: 28px;
+}
+
+.cardHeader h2 {
+    margin: 0 0 8px;
+
+    font-size: 30px;
+}
+
+.cardHeader p {
+    margin: 0;
+
+    color: rgba(255, 255, 255, 0.68);
+
+    font-size: 14px;
+
+    line-height: 1.5;
+}
+
+.form {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 18px;
+}
+
+.inputGroup {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+.inputGroup label {
+    font-size: 13px;
+
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.inputGroup input {
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 14px 15px;
+
+    border: 1px solid rgba(255, 255, 255, 0.18);
+
+    border-radius: 10px;
+
+    outline: none;
+
+    background: rgba(0, 0, 0, 0.25);
+
+    color: white;
+
+    font-size: 14px;
+
+    transition:
+        border 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.inputGroup input::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.inputGroup input:focus {
+    border-color: rgba(255, 255, 255, 0.65);
+
+    background: rgba(0, 0, 0, 0.35);
+
+    box-shadow:
+        0 0 0 3px rgba(255, 255, 255, 0.08);
+}
+
+.authCard .submitButton {
+    margin-top: 5px;
+}
+
+.message {
+    margin: 18px auto 0;
+
+    width: min(620px, calc(100% - 40px));
+
+    padding: 10px 12px;
+
+    box-sizing: border-box;
+
+    border-radius: 8px;
+
+    background: rgba(255, 255, 255, 0.10);
+
+    color: white;
+
+    text-align: center;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+
+    position: relative;
+
+    z-index: 4;
+}
+
+.authCard .message {
+    width: 100%;
+
+    margin: 18px 0 0;
+}
+
+.switchText {
+    margin-top: 24px;
+
+    text-align: center;
+
+    font-size: 13px;
+
+    color: rgba(255, 255, 255, 0.65);
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+.switchButton {
+    border: none;
+
+    background: transparent;
+
+    color: white;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.switchButton:hover {
+    text-decoration: underline;
+}
+
+/* Background Dots */
+
+.dots {
+    position: fixed;
+
+    z-index: 5;
+
+    bottom: 25px;
+
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    display: flex;
+
+    gap: 8px;
+}
+
+.dots span {
+    width: 7px;
+
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.35);
+
+    transition:
+        width 0.3s ease,
+        background 0.3s ease;
+}
+
+.dots .activeDot {
+    width: 24px;
+
+    border-radius: 10px;
+
+    background: white;
+}
+
+/* Animations */
+
+@keyframes backgroundMove {
+    0% {
+        transform: scale(1.08) translate(0, 0);
+    }
+
+    50% {
+        transform: scale(1.12) translate(-10px, -5px);
+    }
+
+    100% {
+        transform: scale(1.08) translate(10px, 5px);
+    }
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+
+        transform: translateY(25px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform: translateY(0);
+    }
+}
+
+@keyframes cardAppear {
+    from {
+        opacity: 0;
+
+        transform: translateX(30px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform: translateX(0);
+    }
+}
+
+/* Tablet */
+
+@media (max-width: 1050px) {
+    .content {
+        flex-direction: column;
+
+        justify-content: center;
+
+        align-items: center;
+
+        padding: 110px 30px 70px;
+
+        gap: 45px;
+    }
+
+    .intro {
+        max-width: 700px;
+
+        text-align: center;
+    }
+
+    .featureText {
+        justify-content: center;
+    }
+
+    .roomOptions {
+        width: 650px;
+    }
+}
+
+/* Mobile */
+
+@media (max-width: 700px) {
+    .navbar {
+        height: 68px;
+
+        padding: 0 18px;
+    }
+
+    .navLogo {
+        font-size: 18px;
+    }
+
+    .navButtons {
+        gap: 7px;
+    }
+
+    .navButton {
+        padding: 8px 13px;
+
+        font-size: 12px;
+    }
+
+    .content {
+        padding: 100px 18px 65px;
+
+        gap: 35px;
+    }
+
+    .intro h1 {
+        font-size: 48px;
+
+        letter-spacing: -2px;
+    }
+
+    .tagline {
+        font-size: 22px;
+
+        margin-top: 20px;
+    }
+
+    .description {
+        font-size: 15px;
+    }
+
+    .smallText {
+        font-size: 11px;
+
+        letter-spacing: 3px;
+    }
+
+    .roomOptions {
+        width: 100%;
+
+        grid-template-columns: 1fr;
+
+        gap: 0;
+
+        padding: 25px;
+
+        border-radius: 20px;
+    }
+
+    .roomOptions::after {
+        top: 50%;
+
+        left: 25px;
+
+        right: 25px;
+
+        bottom: auto;
+
+        width: auto;
+
+        height: 1px;
+    }
+
+    .roomCard {
+        padding: 10px 0 30px;
+    }
+
+    .roomCard:first-child {
+        padding-left: 0;
+
+        padding-right: 0;
+    }
+
+    .roomCard:last-child {
+        padding-left: 0;
+
+        padding-right: 0;
+
+        padding-top: 30px;
+
+        padding-bottom: 10px;
+    }
+
+    .roomCard h2 {
+        font-size: 21px;
+    }
+
+    .roomCard p {
+        margin-bottom: 20px;
+    }
+
+    .authCard {
+        width: 100%;
+
+        max-width: 390px;
+
+        padding: 30px 22px;
+
+        border-radius: 18px;
+    }
+
+    .cardHeader h2 {
+        font-size: 25px;
+    }
+
+    .message {
+        width: calc(100% - 30px);
+    }
+}
+
+/* Small Mobile */
+
+@media (max-width: 400px) {
+    .navbar {
+        padding: 0 12px;
+    }
+
+    .navLogo {
+        font-size: 16px;
+    }
+
+    .navButton {
+        padding: 7px 10px;
+
+        font-size: 11px;
+    }
+
+    .content {
+        padding-left: 14px;
+
+        padding-right: 14px;
+    }
+
+    .intro h1 {
+        font-size: 42px;
+    }
+
+    .roomOptions {
+        padding: 21px;
+    }
+
+    .authCard {
+        padding: 28px 20px;
+    }
+}
