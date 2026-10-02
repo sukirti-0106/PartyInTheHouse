@@ -4,7 +4,7 @@ import { useAuth } from "./AuthContext";
 
 const RoomContext = createContext();
 
-const API = "http://localhost:8080/api";
+const API = "https://partyinthehouse.onrender.com/api";
 
 export const RoomProvider = ({ children }) => {
     const { token } = useAuth();

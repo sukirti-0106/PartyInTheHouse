@@ -51,7 +51,7 @@ const Authentication = () => {
         try {
             if (isLogin) {
                 const response = await axios.post(
-                    "http://localhost:8080/api/users/login",
+                    "https://partyinthehouse.onrender.com/api/users/login",
                     {
                         email,
                         password
@@ -62,7 +62,7 @@ const Authentication = () => {
                 navigate("/home");
             } else {
                 await axios.post(
-                    "http://localhost:8080/api/users/register",
+                   "https://partyinthehouse.onrender.com/api/users/register",
                     {
                         username,
                         email,

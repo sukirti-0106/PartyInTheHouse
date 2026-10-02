@@ -1,177 +1,110 @@
-import { useEffect, useRef, useState } from "react";
-import {
-    useLocation,
-    useNavigate,
-    useParams
-} from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
-import { useAuth } from "../contexts/AuthContext";
 import styles from "../styles/WatchParty.module.css";
 
+const SOCKET_URL = "https://partyinthehouse.onrender.com";
+
 const WatchParty = () => {
-    const { roomId } = useParams();
-    const location = useLocation();
-    const { user, token } = useAuth();
-    const navigate = useNavigate();
-
-    const guestUsername =
-        location.state?.username ||
-        sessionStorage.getItem("guestUsername") ||
-        "Guest";
-
-    const guestId =
-        location.state?.guestId ||
-        sessionStorage.getItem("guestId") ||
-        "";
-
-    const createRoom =
-        location.state?.createRoom || false;
-
-    const initialVideoId =
-        location.state?.videoId || "";
-
-    const initialRoomName =
-        location.state?.roomName || "";
-
-    const currentUserId =
-        user?.id || guestId;
-
-    const currentUsername =
-        user?.username || guestUsername;
-
     const socketRef = useRef(null);
-    const playerRef = useRef(null);
-    const playerContainerRef =
-        useRef(null);
-    const syncingRef = useRef(false);
-    const lastTimeRef = useRef(0);
-    const roleRef = useRef("");
+    const videoRef = useRef(null);
+    const roleRef = useRef("Participant");
 
-    const [roomVibe, setRoomVibe] =
-        useState("Normal");
+    const [roomId, setRoomId] = useState("");
+    const [roomName, setRoomName] = useState("Watch Party");
+    const [videoId, setVideoId] = useState("");
+    const [videoInput, setVideoInput] = useState("");
 
-    const [showMoodPopup, setShowMoodPopup] =
-        useState(true);
+    const [role, setRole] = useState("Participant");
+    const [participants, setParticipants] = useState([]);
 
-    const [showSidebar, setShowSidebar] =
-        useState(true);
+    const [playState, setPlayState] = useState("paused");
+    const [currentTime, setCurrentTime] = useState(0);
 
-    const [fullView, setFullView] =
-        useState(false);
+    const [queue, setQueue] = useState([]);
+    const [queueInput, setQueueInput] = useState("");
 
-    const [sidebarTab, setSidebarTab] =
-        useState("chat");
+    const [vibe, setVibe] = useState("Normal");
 
-    const [role, setRole] =
-        useState("");
+    const [messages, setMessages] = useState([]);
+    const [messageInput, setMessageInput] = useState("");
 
-    const [participants, setParticipants] =
-        useState([]);
+    const [reactions, setReactions] = useState([]);
 
-    const [videoId, setVideoId] =
-        useState(initialVideoId);
+    const [username, setUsername] = useState(
+        localStorage.getItem("username") || "User"
+    );
 
-    const [videoInput, setVideoInput] =
-        useState("");
-
-    const [queue, setQueue] =
-        useState([]);
-
-    const [queueVideoInput, setQueueVideoInput] =
-        useState("");
-
-    const [messages, setMessages] =
-        useState([]);
-
-    const [message, setMessage] =
-        useState("");
-
-    const [reactions, setReactions] =
-        useState([]);
-
-    const [error, setError] =
-        useState("");
-
-    const [roomName, setRoomName] =
-        useState(initialRoomName);
-
-    const vibes = [
-        "Normal",
-        "Movie Night",
-        "Late Night",
-        "Party",
-        "Romantic",
-        "Chill",
-        "Workplace"
-    ];
+    const [currentUserId, setCurrentUserId] = useState("");
 
     const canControl =
         role === "Host" ||
         role === "Moderator";
 
-    const isHost =
-        role === "Host";
+    const isHost = role === "Host";
 
     useEffect(() => {
-        if (guestUsername) {
-            sessionStorage.setItem(
-                "guestUsername",
-                guestUsername
-            );
+        const token = localStorage.getItem("token");
+
+        const guestId =
+            localStorage.getItem("guestId");
+
+        const guestName =
+            localStorage.getItem("guestName");
+
+        let userId = "";
+
+        if (token) {
+            try {
+                const payload = JSON.parse(
+                    atob(token.split(".")[1])
+                );
+
+                userId =
+                    payload.id ||
+                    payload._id ||
+                    "";
+            } catch (error) {
+                console.log(
+                    "Unable to read token"
+                );
+            }
         }
-    }, [guestUsername]);
 
-    useEffect(() => {
-        const socket = io(
-            "http://localhost:8080",
+        if (!userId && guestId) {
+            userId = guestId;
+        }
+
+        setCurrentUserId(userId);
+
+        socketRef.current = io(
+            SOCKET_URL,
             {
                 auth: {
-                    token: token || null,
-                    guestId: user
-                        ? null
-                        : guestId,
-                    guestName: user
-                        ? null
-                        : currentUsername
+                    token,
+                    guestId,
+                    guestName
                 }
             }
         );
 
-        socketRef.current = socket;
+        const socket =
+            socketRef.current;
 
         socket.on("connect", () => {
-            socket.emit(
-                "join_room",
-                {
-                    roomId,
-                    username:
-                        currentUsername,
-                    createRoom:
-                        createRoom,
-                    videoId:
-                        initialVideoId,
-                    roomName:
-                        initialRoomName
-                }
+            console.log(
+                "Connected:",
+                socket.id
             );
         });
 
         socket.on(
             "user_joined",
             (data) => {
-                if (
-                    Array.isArray(
-                        data.participants
-                    )
-                ) {
-                    setParticipants(
-                        data.participants
-                    );
-                }
+                setParticipants(
+                    data.participants || []
+                );
 
-                if (
-                    data.roomName
-                ) {
+                if (data.roomName) {
                     setRoomName(
                         data.roomName
                     );
@@ -179,17 +112,14 @@ const WatchParty = () => {
 
                 if (
                     data.userId ===
-                    currentUserId
+                    userId
                 ) {
-                    const newRole =
-                        data.role || "";
-
                     setRole(
-                        newRole
+                        data.role
                     );
 
                     roleRef.current =
-                        newRole;
+                        data.role;
                 }
             }
         );
@@ -197,37 +127,27 @@ const WatchParty = () => {
         socket.on(
             "user_left",
             (data) => {
-                if (
-                    Array.isArray(
-                        data.participants
-                    )
-                ) {
-                    setParticipants(
-                        data.participants
-                    );
-                }
+                setParticipants(
+                    data.participants || []
+                );
             }
         );
 
+        /*
+         * IMPORTANT:
+         * This handles both old host
+         * and new host after transfer.
+         */
         socket.on(
             "role_assigned",
             (data) => {
-                /*
-                 * Backend can send the complete participant
-                 * list or only the changed user's role.
-                 * Handle both cases.
-                 */
                 if (
-                    Array.isArray(
-                        data.participants
-                    )
+                    data.participants
                 ) {
                     setParticipants(
                         data.participants
                     );
-                } else if (
-                    data.userId
-                ) {
+                } else {
                     setParticipants(
                         (prev) =>
                             prev.map(
@@ -235,10 +155,10 @@ const WatchParty = () => {
                                     participant.userId ===
                                     data.userId
                                         ? {
-                                            ...participant,
-                                            role:
-                                                data.role
-                                        }
+                                              ...participant,
+                                              role:
+                                                  data.role
+                                          }
                                         : participant
                             )
                     );
@@ -246,17 +166,14 @@ const WatchParty = () => {
 
                 if (
                     data.userId ===
-                    currentUserId
+                    userId
                 ) {
-                    const newRole =
-                        data.role || "Participant";
-
                     setRole(
-                        newRole
+                        data.role
                     );
 
                     roleRef.current =
-                        newRole;
+                        data.role;
                 }
             }
         );
@@ -266,28 +183,22 @@ const WatchParty = () => {
             (data) => {
                 if (
                     data.userId ===
-                    currentUserId
+                    userId
                 ) {
-                    navigate("/");
+                    alert(
+                        "You were removed from the room."
+                    );
+
+                    window.location.href =
+                        "/";
                     return;
                 }
 
                 if (
-                    Array.isArray(
-                        data.participants
-                    )
+                    data.participants
                 ) {
                     setParticipants(
                         data.participants
-                    );
-                } else {
-                    setParticipants(
-                        (prev) =>
-                            prev.filter(
-                                (participant) =>
-                                    participant.userId !==
-                                    data.userId
-                            )
                     );
                 }
             }
@@ -296,17 +207,47 @@ const WatchParty = () => {
         socket.on(
             "sync_state",
             (data) => {
-                setVideoId(
-                    data.videoId || ""
-                );
+                if (
+                    data.videoId !==
+                    undefined
+                ) {
+                    setVideoId(
+                        data.videoId
+                    );
+                }
 
-                setQueue(
-                    data.queue || []
-                );
+                if (
+                    data.playState
+                ) {
+                    setPlayState(
+                        data.playState
+                    );
+                }
 
-                setRoomVibe(
-                    data.vibe || "Normal"
-                );
+                if (
+                    typeof data.currentTime ===
+                    "number"
+                ) {
+                    setCurrentTime(
+                        data.currentTime
+                    );
+                }
+
+                if (
+                    data.queue
+                ) {
+                    setQueue(
+                        data.queue
+                    );
+                }
+
+                if (
+                    data.vibe
+                ) {
+                    setVibe(
+                        data.vibe
+                    );
+                }
 
                 if (
                     data.roomName
@@ -315,149 +256,67 @@ const WatchParty = () => {
                         data.roomName
                     );
                 }
-
-                if (
-                    data.vibe ===
-                    "Normal"
-                ) {
-                    setShowMoodPopup(
-                        true
-                    );
-                } else {
-                    setShowMoodPopup(
-                        false
-                    );
-                }
-
-                if (
-                    playerRef.current &&
-                    data.videoId
-                ) {
-                    playerRef.current.loadVideoById(
-                        data.videoId
-                    );
-
-                    if (
-                        typeof data.currentTime ===
-                        "number"
-                    ) {
-                        playerRef.current.seekTo(
-                            data.currentTime,
-                            true
-                        );
-                    }
-
-                    if (
-                        data.playState ===
-                        "playing"
-                    ) {
-                        playerRef.current.playVideo();
-                    } else {
-                        playerRef.current.pauseVideo();
-                    }
-                }
             }
         );
 
         socket.on(
             "play",
             () => {
-                if (
-                    playerRef.current
-                ) {
-                    syncingRef.current =
-                        true;
-
-                    playerRef.current.playVideo();
-
-                    setTimeout(() => {
-                        syncingRef.current =
-                            false;
-                    }, 500);
-                }
+                setPlayState(
+                    "playing"
+                );
             }
         );
 
         socket.on(
             "pause",
             () => {
-                if (
-                    playerRef.current
-                ) {
-                    syncingRef.current =
-                        true;
-
-                    playerRef.current.pauseVideo();
-
-                    setTimeout(() => {
-                        syncingRef.current =
-                            false;
-                    }, 500);
-                }
+                setPlayState(
+                    "paused"
+                );
             }
         );
 
         socket.on(
             "seek",
-            (data) => {
-                if (
-                    playerRef.current
-                ) {
-                    syncingRef.current =
-                        true;
-
-                    lastTimeRef.current =
-                        data.time;
-
-                    playerRef.current.seekTo(
-                        data.time,
-                        true
-                    );
-
-                    setTimeout(() => {
-                        syncingRef.current =
-                            false;
-                    }, 500);
-                }
+            ({ time }) => {
+                setCurrentTime(
+                    time
+                );
             }
         );
 
         socket.on(
             "change_video",
-            (data) => {
+            ({ videoId }) => {
                 setVideoId(
-                    data.videoId
+                    videoId
                 );
 
-                if (
-                    playerRef.current
-                ) {
-                    playerRef.current.loadVideoById(
-                        data.videoId
-                    );
-                }
+                setCurrentTime(
+                    0
+                );
+
+                setPlayState(
+                    "paused"
+                );
             }
         );
 
         socket.on(
             "queue_updated",
-            (data) => {
+            ({ queue }) => {
                 setQueue(
-                    data.queue || []
+                    queue || []
                 );
             }
         );
 
         socket.on(
             "room_vibe_changed",
-            (data) => {
-                setRoomVibe(
-                    data.vibe
-                );
-
-                setShowMoodPopup(
-                    data.vibe ===
-                    "Normal"
+            ({ vibe }) => {
+                setVibe(
+                    vibe
                 );
             }
         );
@@ -477,17 +336,10 @@ const WatchParty = () => {
         socket.on(
             "new_reaction",
             (data) => {
-                const reaction = {
-                    ...data,
-                    id:
-                        data.id ||
-                        `${Date.now()}-${Math.random()}`
-                };
-
                 setReactions(
                     (prev) => [
                         ...prev,
-                        reaction
+                        data
                     ]
                 );
 
@@ -495,30 +347,28 @@ const WatchParty = () => {
                     setReactions(
                         (prev) =>
                             prev.filter(
-                                (item) =>
-                                    item.id !==
-                                    reaction.id
+                                (reaction) =>
+                                    reaction.id !==
+                                    data.id
                             )
                     );
-                }, 2500);
+                }, 3000);
             }
         );
 
         socket.on(
             "room_error",
-            (data) => {
-                setError(
-                    data.message
-                );
+            ({ message }) => {
+                alert(message);
             }
         );
 
         socket.on(
             "connect_error",
-            (socketError) => {
-                setError(
-                    socketError.message ||
-                    "Unable to connect to room"
+            (error) => {
+                console.log(
+                    "Socket error:",
+                    error.message
                 );
             }
         );
@@ -526,244 +376,117 @@ const WatchParty = () => {
         return () => {
             socket.disconnect();
         };
-    }, [
-        roomId,
-        token,
-        guestId,
-        currentUsername,
-        currentUserId,
-        createRoom,
-        initialVideoId,
-        initialRoomName,
-        user,
-        navigate
-    ]);
+    }, []);
 
-    useEffect(() => {
-        const createPlayer = () => {
-            if (
-                playerRef.current ||
-                !playerContainerRef.current ||
-                !videoId
-            ) {
-                return;
-            }
-
-            playerRef.current =
-                new window.YT.Player(
-                    playerContainerRef.current,
-                    {
-                        width: "100%",
-                        height: "100%",
-                        videoId:
-                            videoId,
-
-                        playerVars: {
-                            autoplay: 0,
-                            controls: 1,
-                            rel: 0,
-                            origin:
-                                window.location.origin
-                        },
-
-                        events: {
-                            onError:
-                                (event) => {
-                                    console.log(
-                                        "YouTube error code:",
-                                        event.data
-                                    );
-                                },
-
-                            onStateChange:
-                                (event) => {
-                                    if (
-                                        event.data ===
-                                        window.YT
-                                            .PlayerState
-                                            .ENDED
-                                    ) {
-                                        if (
-                                            socketRef.current
-                                        ) {
-                                            socketRef.current.emit(
-                                                "video_ended"
-                                            );
-                                        }
-
-                                        return;
-                                    }
-
-                                    if (
-                                        syncingRef.current
-                                    ) {
-                                        return;
-                                    }
-
-                                    const currentRole =
-                                        roleRef.current;
-
-                                    if (
-                                        currentRole !==
-                                        "Host" &&
-                                        currentRole !==
-                                        "Moderator"
-                                    ) {
-                                        return;
-                                    }
-
-                                    if (
-                                        event.data ===
-                                        window.YT
-                                            .PlayerState
-                                            .PLAYING
-                                    ) {
-                                        socketRef.current.emit(
-                                            "play"
-                                        );
-                                    }
-
-                                    if (
-                                        event.data ===
-                                        window.YT
-                                            .PlayerState
-                                            .PAUSED
-                                    ) {
-                                        socketRef.current.emit(
-                                            "pause"
-                                        );
-                                    }
-                                }
-                        }
-                    }
-                );
-        };
-
-        if (
-            window.YT &&
-            window.YT.Player
-        ) {
-            createPlayer();
-            return;
-        }
-
-        const script =
-            document.createElement(
-                "script"
-            );
-
-        script.src =
-            "https://www.youtube.com/iframe_api";
-
-        document.body.appendChild(
-            script
-        );
-
-        window.onYouTubeIframeAPIReady =
-            createPlayer;
-    }, [videoId]);
-
-    useEffect(() => {
-        const interval =
-            setInterval(() => {
-                if (
-                    !playerRef.current ||
-                    !canControl ||
-                    syncingRef.current
-                ) {
-                    return;
-                }
-
-                const currentTime =
-                    playerRef.current.getCurrentTime();
-
-                const difference =
-                    Math.abs(
-                        currentTime -
-                        lastTimeRef.current
-                    );
-
-                if (
-                    difference > 1.5 &&
-                    socketRef.current
-                ) {
-                    socketRef.current.emit(
-                        "seek",
-                        {
-                            time:
-                                currentTime
-                        }
-                    );
-                }
-
-                lastTimeRef.current =
-                    currentTime;
-            }, 500);
-
-        return () => {
-            clearInterval(
-                interval
-            );
-        };
-    }, [canControl]);
-
-    const getVideoId = (
-        input
+    const getYouTubeId = (
+        value
     ) => {
-        let value =
-            input.trim();
-
         if (!value) {
             return "";
         }
 
+        if (
+            value.length === 11 &&
+            !value.includes("/")
+        ) {
+            return value;
+        }
+
         try {
+            const url =
+                new URL(value);
+
             if (
-                value.includes(
-                    "youtube.com"
-                ) ||
-                value.includes(
+                url.hostname.includes(
                     "youtu.be"
                 )
             ) {
-                const url =
-                    new URL(value);
+                return url.pathname
+                    .replace("/", "")
+                    .trim();
+            }
 
-                if (
-                    url.hostname.includes(
-                        "youtu.be"
-                    )
-                ) {
-                    return url.pathname
-                        .replace(
-                            "/",
-                            ""
-                        )
-                        .split(
-                            "/"
-                        )[0];
-                }
-
+            if (
+                url.hostname.includes(
+                    "youtube.com"
+                )
+            ) {
                 return (
                     url.searchParams.get(
                         "v"
                     ) || ""
                 );
             }
-        } catch (
-            error
-        ) {
-            console.log(
-                "Invalid YouTube URL"
-            );
+        } catch (error) {
+            return "";
         }
 
-        return value;
+        return "";
+    };
+
+    const joinRoom = () => {
+        if (!roomId.trim()) {
+            alert(
+                "Enter room code"
+            );
+            return;
+        }
+
+        socketRef.current.emit(
+            "join_room",
+            {
+                roomId:
+                    roomId.trim(),
+                username:
+                    username.trim() ||
+                    "User",
+                createRoom: false
+            }
+        );
+    };
+
+    const createRoom = () => {
+        const cleanVideoId =
+            getYouTubeId(
+                videoInput
+            );
+
+        if (!cleanVideoId) {
+            alert(
+                "Enter a valid YouTube video"
+            );
+            return;
+        }
+
+        if (!roomId.trim()) {
+            alert(
+                "Enter room code"
+            );
+            return;
+        }
+
+        socketRef.current.emit(
+            "join_room",
+            {
+                roomId:
+                    roomId.trim(),
+                username:
+                    username.trim() ||
+                    "User",
+                createRoom: true,
+                videoId:
+                    cleanVideoId,
+                roomName:
+                    roomName ||
+                    "Watch Party"
+            }
+        );
     };
 
     const handlePlay = () => {
-        if (!canControl)
+        if (!canControl) {
             return;
+        }
 
         socketRef.current.emit(
             "play"
@@ -771,24 +494,30 @@ const WatchParty = () => {
     };
 
     const handlePause = () => {
-        if (!canControl)
+        if (!canControl) {
             return;
+        }
 
         socketRef.current.emit(
             "pause"
         );
     };
 
-    const handleSeek = () => {
-        if (
-            !canControl ||
-            !playerRef.current
-        ) {
+    const handleSeek = (
+        event
+    ) => {
+        if (!canControl) {
             return;
         }
 
         const time =
-            playerRef.current.getCurrentTime();
+            Number(
+                event.target.value
+            );
+
+        setCurrentTime(
+            time
+        );
 
         socketRef.current.emit(
             "seek",
@@ -798,111 +527,142 @@ const WatchParty = () => {
         );
     };
 
-    const handleChangeVideo =
-        () => {
-            if (
-                !isHost ||
-                !videoInput.trim()
-            ) {
-                return;
+    const handleChangeVideo = () => {
+        if (!isHost) {
+            return;
+        }
+
+        const cleanVideoId =
+            getYouTubeId(
+                videoInput
+            );
+
+        if (!cleanVideoId) {
+            alert(
+                "Enter a valid YouTube video"
+            );
+            return;
+        }
+
+        socketRef.current.emit(
+            "change_video",
+            {
+                videoId:
+                    cleanVideoId
             }
+        );
+    };
 
-            const id =
-                getVideoId(
-                    videoInput
-                );
+    const addToQueue = () => {
+        if (!canControl) {
+            return;
+        }
 
-            if (!id) return;
-
-            socketRef.current.emit(
-                "change_video",
-                {
-                    videoId: id
-                }
+        const cleanVideoId =
+            getYouTubeId(
+                queueInput
             );
 
-            setVideoInput("");
-        };
+        if (!cleanVideoId) {
+            alert(
+                "Enter a valid YouTube video"
+            );
+            return;
+        }
 
-    const handleAddToQueue =
-        () => {
-            if (
-                !canControl ||
-                !queueVideoInput.trim()
-            ) {
-                return;
+        socketRef.current.emit(
+            "add_to_queue",
+            {
+                videoId:
+                    cleanVideoId
             }
+        );
 
-            const id =
-                getVideoId(
-                    queueVideoInput
-                );
+        setQueueInput("");
+    };
 
-            if (!id) return;
+    const removeFromQueue = (
+        index
+    ) => {
+        if (!canControl) {
+            return;
+        }
 
-            socketRef.current.emit(
-                "add_to_queue",
-                {
-                    videoId: id
-                }
-            );
+        socketRef.current.emit(
+            "remove_from_queue",
+            {
+                index
+            }
+        );
+    };
 
-            setQueueVideoInput("");
-        };
+    const changeVibe = (
+        newVibe
+    ) => {
+        if (!isHost) {
+            return;
+        }
 
-    const handleRemoveFromQueue =
-        (index) => {
-            if (!canControl)
-                return;
+        socketRef.current.emit(
+            "change_vibe",
+            {
+                vibe: newVibe
+            }
+        );
+    };
 
-            socketRef.current.emit(
-                "remove_from_queue",
-                {
-                    index
-                }
-            );
-        };
+    const sendMessage = () => {
+        if (
+            !messageInput.trim()
+        ) {
+            return;
+        }
 
-    const handleChangeVibe =
-        (vibe) => {
-            if (!isHost)
-                return;
+        socketRef.current.emit(
+            "send_message",
+            {
+                message:
+                    messageInput.trim()
+            }
+        );
 
-            setRoomVibe(vibe);
-            setShowMoodPopup(
-                false
-            );
+        setMessageInput("");
+    };
 
-            socketRef.current.emit(
-                "change_vibe",
-                {
-                    vibe
-                }
-            );
-        };
+    const sendReaction = (
+        reaction
+    ) => {
+        socketRef.current.emit(
+            "reaction",
+            {
+                reaction
+            }
+        );
+    };
 
-    const handleAssignRole =
-        (
-            userId,
-            newRole
-        ) => {
-            if (!isHost)
-                return;
+    const assignRole = (
+        userId,
+        newRole
+    ) => {
+        if (!isHost) {
+            return;
+        }
 
-            socketRef.current.emit(
-                "assign_role",
-                {
-                    userId,
-                    role: newRole
-                }
-            );
-        };
+        socketRef.current.emit(
+            "assign_role",
+            {
+                userId,
+                role: newRole
+            }
+        );
+    };
 
-    const handleRemove = (
+    const removeParticipant = (
         userId
     ) => {
-        if (!isHost)
+        if (!isHost) {
             return;
+        }
 
         socketRef.current.emit(
             "remove_participant",
@@ -912,1003 +672,884 @@ const WatchParty = () => {
         );
     };
 
-    const handleSendMessage =
-        (e) => {
-            e.preventDefault();
-
-            if (!message.trim())
-                return;
-
-            socketRef.current.emit(
-                "send_message",
-                {
-                    message:
-                        message.trim()
-                }
-            );
-
-            setMessage("");
-        };
-
-    const sendReaction = (
-        emoji
-    ) => {
-        if (
-            !socketRef.current
-        ) {
-            return;
-        }
-
+    const leaveRoom = () => {
         socketRef.current.emit(
-            "reaction",
-            {
-                reaction:
-                    emoji
-            }
+            "leave_room"
         );
+
+        window.location.href =
+            "/";
     };
 
-    const handleLeaveRoom =
-        () => {
-            if (
-                socketRef.current
-            ) {
-                socketRef.current.emit(
-                    "leave_room"
-                );
-
-                socketRef.current.disconnect();
-
-                socketRef.current =
-                    null;
-            }
-
-            navigate("/");
-        };
-
-    const getVibeClass = () => {
-        if (
-            roomVibe ===
-            "Movie Night"
-        ) {
-            return styles.movieNight;
+    const getVideoUrl = () => {
+        if (!videoId) {
+            return "";
         }
 
-        if (
-            roomVibe ===
-            "Late Night"
-        ) {
-            return styles.lateNight;
-        }
-
-        if (
-            roomVibe ===
-            "Party"
-        ) {
-            return styles.party;
-        }
-
-        if (
-            roomVibe ===
-            "Romantic"
-        ) {
-            return styles.romantic;
-        }
-
-        if (
-            roomVibe ===
-            "Chill"
-        ) {
-            return styles.chill;
-        }
-
-        if (
-            roomVibe ===
-            "Workplace"
-        ) {
-            return styles.workplace;
-        }
-
-        return styles.normal;
+        return `https://www.youtube.com/embed/${videoId}?enablejsapi=1`;
     };
 
     return (
-        <div
-            className={`${styles.page} ${
-                getVibeClass()
-            } ${
-                !showSidebar
-                    ? styles.sidebarClosed
-                    : ""
-            } ${
-                fullView
-                    ? styles.fullView
-                    : ""
-            }`}
-        >
+        <div className={styles.page}>
+            <header
+                className={
+                    styles.header
+                }
+            >
+                <div>
+                    <h1>
+                        {roomName}
+                    </h1>
+
+                    <div
+                        className={
+                            styles.roleText
+                        }
+                    >
+                        You are:{" "}
+                        <strong>
+                            {role}
+                        </strong>
+                    </div>
+                </div>
+
+                <div
+                    className={
+                        styles.headerRight
+                    }
+                >
+                    <span>
+                        Room:{" "}
+                        <strong>
+                            {roomId}
+                        </strong>
+                    </span>
+
+                    <button
+                        className={
+                            styles.leaveButton
+                        }
+                        onClick={
+                            leaveRoom
+                        }
+                    >
+                        Leave
+                    </button>
+                </div>
+            </header>
+
             <div
                 className={
                     styles.container
                 }
             >
-                <div
-                    className={
-                        styles.header
-                    }
-                >
-                    <div
-                        className={
-                            styles.logo
-                        }
-                    >
-                        <span
-                            className={
-                                styles.logoIcon
-                            }
-                        >
-                            ⚡
-                        </span>
-
-                        Watch Party
-                    </div>
-
-                    <div
-                        className={
-                            styles.roomInfo
-                        }
-                    >
-                        <span>
-                            {roomName ||
-                                "Watch Room"}
-                        </span>
-
-                        <span
-                            className={
-                                styles.roomId
-                            }
-                        >
-                            Code: {roomId}
-                        </span>
-
-                        <span
-                            className={
-                                styles.youAre
-                            }
-                        >
-                            You are:
-                            <strong>
-                                {" "}
-                                {role ||
-                                    "Connecting..."}
-                            </strong>
-                        </span>
-                    </div>
-                </div>
-
-                {error && (
-                    <div
-                        className={
-                            styles.error
-                        }
-                    >
-                        {error}
-                    </div>
-                )}
-
-                <div
-                    className={
-                        styles.vibeBar
-                    }
-                >
-                    <div
-                        className={
-                            styles.vibeTitle
-                        }
-                    >
-                        <span>
-                            Room vibe
-                        </span>
-
-                        <span
-                            className={
-                                styles.selectedVibe
-                            }
-                        >
-                            {roomVibe ===
-                            "Normal"
-                                ? "Choose mood"
-                                : roomVibe}
-                        </span>
-                    </div>
-
-                    {isHost && (
-                        <div
-                            className={
-                                styles.vibeOptions
-                            }
-                        >
-                            {vibes.map(
-                                (vibe) => (
-                                    <button
-                                        key={
-                                            vibe
-                                        }
-                                        className={
-                                            roomVibe ===
-                                            vibe
-                                                ? `${styles.vibeButton} ${styles.activeVibe}`
-                                                : styles.vibeButton
-                                        }
-                                        onClick={() =>
-                                            handleChangeVibe(
-                                                vibe
-                                            )
-                                        }
-                                    >
-                                        {
-                                            vibe
-                                        }
-                                    </button>
-                                )
-                            )}
-                        </div>
-                    )}
-
-                    {showMoodPopup &&
-                        isHost && (
-                            <div
-                                className={
-                                    styles.moodPopup
-                                }
-                            >
-                                <button
-                                    className={
-                                        styles.popupClose
-                                    }
-                                    onClick={() =>
-                                        setShowMoodPopup(
-                                            false
-                                        )
-                                    }
-                                >
-                                    ×
-                                </button>
-
-                                <strong>
-                                    Choose your mood
-                                </strong>
-
-                                <p>
-                                    From here you can choose the mood you like for your watch party.
-                                </p>
-                            </div>
-                        )}
-                </div>
-
-                {fullView && (
-                    <button
-                        className={
-                            styles.exitFullView
-                        }
-                        onClick={() =>
-                            setFullView(
-                                false
-                            )
-                        }
-                    >
-                        ✕ Exit Full View
-                    </button>
-                )}
-
-                <div
+                <main
                     className={
                         styles.main
                     }
                 >
-                    <div
+                    <section
                         className={
                             styles.videoSection
                         }
                     >
                         <div
                             className={
-                                styles.videoCard
+                                styles.videoWrapper
                             }
                         >
-                            <div
-                                className={
-                                    styles.fullViewVideoWrapper
-                                }
-                            >
-                                <div
+                            {videoId ? (
+                                <iframe
                                     ref={
-                                        playerContainerRef
+                                        videoRef
                                     }
+                                    src={getVideoUrl()}
+                                    title="Watch Party Video"
                                     className={
                                         styles.video
                                     }
+                                    allow="autoplay; encrypted-media; picture-in-picture"
+                                    allowFullScreen
                                 />
-
-                                {reactions.length >
-                                    0 && (
-                                    <div
-                                        className={
-                                            styles.videoReactions
-                                        }
-                                    >
-                                        {reactions.map(
-                                            (
-                                                reaction
-                                            ) => (
-                                                <span
-                                                    key={
-                                                        reaction.id
-                                                    }
-                                                >
-                                                    {
-                                                        reaction.reaction
-                                                    }
-                                                </span>
-                                            )
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-
-                            <div
-                                className={
-                                    styles.controls
-                                }
-                            >
-                                <button
-                                    className={`${styles.button} ${styles.primaryButton} ${
-                                        !canControl
-                                            ? styles.disabledButton
-                                            : ""
-                                    }`}
-                                    onClick={
-                                        handlePlay
-                                    }
-                                    disabled={
-                                        !canControl
-                                    }
-                                >
-                                    ▶ Play
-                                </button>
-
-                                <button
-                                    className={`${styles.button} ${
-                                        !canControl
-                                            ? styles.disabledButton
-                                            : ""
-                                    }`}
-                                    onClick={
-                                        handlePause
-                                    }
-                                    disabled={
-                                        !canControl
-                                    }
-                                >
-                                    ❚❚ Pause
-                                </button>
-
-                                <button
-                                    className={`${styles.button} ${
-                                        !canControl
-                                            ? styles.disabledButton
-                                            : ""
-                                    }`}
-                                    onClick={
-                                        handleSeek
-                                    }
-                                    disabled={
-                                        !canControl
-                                    }
-                                >
-                                    ⟳ Sync Position
-                                </button>
-
-                                <button
-                                    className={
-                                        styles.button
-                                    }
-                                    onClick={() =>
-                                        setFullView(
-                                            true
-                                        )
-                                    }
-                                >
-                                    ⛶ See in Full View
-                                </button>
-                            </div>
-
-                            {isHost && (
+                            ) : (
                                 <div
                                     className={
-                                        styles.changeVideo
+                                        styles.noVideo
                                     }
                                 >
-                                    <input
-                                        type="text"
-                                        className={
-                                            styles.input
-                                        }
-                                        placeholder="Paste YouTube URL or video ID"
-                                        value={
-                                            videoInput
-                                        }
-                                        onChange={(
-                                            e
-                                        ) =>
-                                            setVideoInput(
-                                                e.target
-                                                    .value
-                                            )
-                                        }
-                                    />
-
-                                    <button
-                                        className={`${styles.button} ${styles.primaryButton}`}
-                                        onClick={
-                                            handleChangeVideo
-                                        }
-                                    >
-                                        Change Video
-                                    </button>
+                                    No video selected
                                 </div>
                             )}
                         </div>
-                    </div>
 
-                    {showSidebar ? (
                         <div
                             className={
-                                styles.sidebar
+                                styles.controls
                             }
                         >
-                            <div
-                                className={
-                                    styles.sidebarHeader
+                            <button
+                                className={`${styles.button} ${styles.primaryButton}`}
+                                onClick={
+                                    handlePlay
+                                }
+                                disabled={
+                                    !canControl
                                 }
                             >
-                                <h2>
-                                    Room
-                                </h2>
+                                ▶ Play
+                            </button>
 
-                                <button
-                                    className={
-                                        styles.closeSidebar
-                                    }
-                                    onClick={() =>
-                                        setShowSidebar(
-                                            false
-                                        )
-                                    }
-                                >
-                                    ×
-                                </button>
-                            </div>
-
-                            <div
-                                className={
-                                    styles.sidebarTabs
+                            <button
+                                className={`${styles.button} ${styles.secondaryButton}`}
+                                onClick={
+                                    handlePause
+                                }
+                                disabled={
+                                    !canControl
                                 }
                             >
-                                <button
-                                    className={
-                                        sidebarTab ===
-                                        "chat"
-                                            ? `${styles.sidebarTab} ${styles.activeTab}`
-                                            : styles.sidebarTab
-                                    }
-                                    onClick={() =>
-                                        setSidebarTab(
-                                            "chat"
-                                        )
-                                    }
-                                >
-                                    Chat
-                                </button>
+                                ⏸ Pause
+                            </button>
 
-                                <button
-                                    className={
-                                        sidebarTab ===
-                                        "people"
-                                            ? `${styles.sidebarTab} ${styles.activeTab}`
-                                            : styles.sidebarTab
-                                    }
-                                    onClick={() =>
-                                        setSidebarTab(
-                                            "people"
-                                        )
-                                    }
-                                >
-                                    People
-                                </button>
-
-                                <button
-                                    className={
-                                        sidebarTab ===
-                                        "queue"
-                                            ? `${styles.sidebarTab} ${styles.activeTab}`
-                                            : styles.sidebarTab
-                                    }
-                                    onClick={() =>
-                                        setSidebarTab(
-                                            "queue"
-                                        )
-                                    }
-                                >
-                                    Queue
-                                </button>
-                            </div>
-
-                            {sidebarTab ===
-                                "chat" && (
-                                <div
-                                    className={
-                                        styles.tabContent
-                                    }
-                                >
-                                    <div
-                                        className={
-                                            styles.chat
-                                        }
-                                    >
-                                        {messages.length ===
-                                        0 ? (
-                                            <div
-                                                className={
-                                                    styles.emptyChat
-                                                }
-                                            >
-                                                <div>
-                                                    ◎
-                                                </div>
-
-                                                <strong>
-                                                    No messages yet
-                                                </strong>
-
-                                                <span>
-                                                    Be the first to say something!
-                                                </span>
-                                            </div>
-                                        ) : (
-                                            messages.map(
-                                                (
-                                                    item,
-                                                    index
-                                                ) => (
-                                                    <p
-                                                        className={
-                                                            styles.message
-                                                        }
-                                                        key={
-                                                            index
-                                                        }
-                                                    >
-                                                        <strong>
-                                                            {
-                                                                item.username
-                                                            }
-                                                            :
-                                                        </strong>{" "}
-                                                        {
-                                                            item.message
-                                                        }
-                                                    </p>
-                                                )
-                                            )
-                                        )}
-                                    </div>
-
-                                    <form
-                                        className={
-                                            styles.chatForm
-                                        }
-                                        onSubmit={
-                                            handleSendMessage
-                                        }
-                                    >
-                                        <input
-                                            type="text"
-                                            className={
-                                                styles.chatInput
-                                            }
-                                            placeholder="Type a message..."
-                                            value={
-                                                message
-                                            }
-                                            onChange={(
-                                                e
-                                            ) =>
-                                                setMessage(
-                                                    e.target
-                                                        .value
-                                                )
-                                            }
-                                        />
-
-                                        <button
-                                            type="submit"
-                                            className={
-                                                styles.sendButton
-                                            }
-                                        >
-                                            Send
-                                        </button>
-                                    </form>
-
-                                    <div
-                                        className={
-                                            styles.reactionSection
-                                        }
-                                    >
-                                        <h3
-                                            className={
-                                                styles.sectionTitle
-                                            }
-                                        >
-                                            Reactions
-                                        </h3>
-
-                                        <div
-                                            className={
-                                                styles.reactions
-                                            }
-                                        >
-                                            {[
-                                                "❤️",
-                                                "😂",
-                                                "🔥",
-                                                "👏"
-                                            ].map(
-                                                (
-                                                    emoji
-                                                ) => (
-                                                    <button
-                                                        key={
-                                                            emoji
-                                                        }
-                                                        className={
-                                                            styles.reactionButton
-                                                        }
-                                                        onClick={() =>
-                                                            sendReaction(
-                                                                emoji
-                                                            )
-                                                        }
-                                                    >
-                                                        {
-                                                            emoji
-                                                        }
-                                                    </button>
-                                                )
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <button
-                                        className={
-                                            styles.leaveButton
-                                        }
-                                        onClick={
-                                            handleLeaveRoom
-                                        }
-                                    >
-                                        Leave Room
-                                    </button>
-                                </div>
-                            )}
-
-                            {sidebarTab ===
-                                "people" && (
-                                <div
-                                    className={
-                                        styles.tabContent
-                                    }
-                                >
-                                    <h3
-                                        className={
-                                            styles.sectionTitle
-                                        }
-                                    >
-                                        <span>
-                                            Participants
-                                        </span>
-
-                                        <span
-                                            className={
-                                                styles.count
-                                            }
-                                        >
+                            <button
+                                className={`${styles.button} ${styles.secondaryButton}`}
+                                onClick={() => {
+                                    if (
+                                        canControl
+                                    ) {
+                                        socketRef.current.emit(
+                                            "seek",
                                             {
-                                                participants.length
+                                                time: currentTime
                                             }
-                                        </span>
-                                    </h3>
+                                        );
+                                    }
+                                }}
+                                disabled={
+                                    !canControl
+                                }
+                            >
+                                Sync
+                            </button>
+                        </div>
 
-                                    {participants.map(
-                                        (
-                                            participant
-                                        ) => (
-                                            <div
-                                                className={
-                                                    styles.participant
-                                                }
-                                                key={
-                                                    participant.socketId
-                                                }
-                                            >
-                                                <div>
-                                                    <div
-                                                        className={
-                                                            styles.participantName
-                                                        }
-                                                    >
-                                                        {
-                                                            participant.username
-                                                        }
-                                                    </div>
+                        <div
+                            className={
+                                styles.seekContainer
+                            }
+                        >
+                            <input
+                                type="range"
+                                min="0"
+                                max="3600"
+                                value={
+                                    currentTime
+                                }
+                                onChange={
+                                    handleSeek
+                                }
+                                disabled={
+                                    !canControl
+                                }
+                                className={
+                                    styles.seek
+                                }
+                            />
 
-                                                    {participant.role ===
-                                                        "Host" && (
-                                                        <span
-                                                            className={
-                                                                styles.role
-                                                            }
-                                                        >
-                                                            Host
-                                                        </span>
-                                                    )}
+                            <span>
+                                {Math.floor(
+                                    currentTime
+                                )}{" "}
+                                sec
+                            </span>
+                        </div>
+                    </section>
 
-                                                    {participant.role ===
-                                                        "Moderator" && (
-                                                        <span
-                                                            className={
-                                                                styles.role
-                                                            }
-                                                        >
-                                                            Moderator
-                                                        </span>
-                                                    )}
+                    <section
+                        className={
+                            styles.card
+                        }
+                    >
+                        <h2>
+                            Video
+                        </h2>
 
-                                                    {isHost &&
-                                                        participant.userId !==
-                                                        currentUserId && (
-                                                            <div
-                                                                className={
-                                                                    styles.participantActions
-                                                                }
-                                                            >
-                                                                <button
-                                                                    className={
-                                                                        styles.smallButton
-                                                                    }
-                                                                    onClick={() =>
-                                                                        handleAssignRole(
-                                                                            participant.userId,
-                                                                            "Moderator"
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Moderator
-                                                                </button>
+                        <div
+                            className={
+                                styles.inputRow
+                            }
+                        >
+                            <input
+                                className={
+                                    styles.input
+                                }
+                                value={
+                                    videoInput
+                                }
+                                onChange={(
+                                    e
+                                ) =>
+                                    setVideoInput(
+                                        e.target
+                                            .value
+                                    )
+                                }
+                                placeholder="YouTube URL"
+                            />
 
-                                                                <button
-                                                                    className={
-                                                                        styles.smallButton
-                                                                    }
-                                                                    onClick={() =>
-                                                                        handleAssignRole(
-                                                                            participant.userId,
-                                                                            "Participant"
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Participant
-                                                                </button>
+                            <button
+                                className={
+                                    styles.button
+                                }
+                                onClick={
+                                    handleChangeVideo
+                                }
+                                disabled={
+                                    !isHost
+                                }
+                            >
+                                Change Video
+                            </button>
+                        </div>
+                    </section>
 
-                                                                <button
-                                                                    className={
-                                                                        styles.smallButton
-                                                                    }
-                                                                    onClick={() =>
-                                                                        handleAssignRole(
-                                                                            participant.userId,
-                                                                            "Host"
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Transfer Host
-                                                                </button>
+                    <section
+                        className={
+                            styles.card
+                        }
+                    >
+                        <h2>
+                            Queue
+                        </h2>
 
-                                                                <button
-                                                                    className={
-                                                                        styles.smallButton
-                                                                    }
-                                                                    onClick={() =>
-                                                                        handleRemove(
-                                                                            participant.userId
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Remove
-                                                                </button>
-                                                            </div>
-                                                        )}
-                                                </div>
-                                            </div>
-                                        )
-                                    )}
+                        <div
+                            className={
+                                styles.inputRow
+                            }
+                        >
+                            <input
+                                className={
+                                    styles.input
+                                }
+                                value={
+                                    queueInput
+                                }
+                                onChange={(
+                                    e
+                                ) =>
+                                    setQueueInput(
+                                        e.target
+                                            .value
+                                    )
+                                }
+                                placeholder="YouTube URL"
+                            />
 
-                                    <button
-                                        className={
-                                            styles.leaveButton
-                                        }
-                                        onClick={
-                                            handleLeaveRoom
-                                        }
-                                    >
-                                        Leave Room
-                                    </button>
-                                </div>
-                            )}
+                            <button
+                                className={
+                                    styles.button
+                                }
+                                onClick={
+                                    addToQueue
+                                }
+                                disabled={
+                                    !canControl
+                                }
+                            >
+                                Add
+                            </button>
+                        </div>
 
-                            {sidebarTab ===
-                                "queue" && (
-                                <div
+                        <div
+                            className={
+                                styles.queue
+                            }
+                        >
+                            {queue.length ===
+                            0 ? (
+                                <p
                                     className={
-                                        styles.tabContent
+                                        styles.empty
                                     }
                                 >
-                                    <h3
-                                        className={
-                                            styles.sectionTitle
-                                        }
-                                    >
-                                        Queue
-                                    </h3>
-
-                                    {canControl && (
+                                    Queue is empty
+                                </p>
+                            ) : (
+                                queue.map(
+                                    (
+                                        item,
+                                        index
+                                    ) => (
                                         <div
+                                            key={
+                                                index
+                                            }
                                             className={
-                                                styles.queueInput
+                                                styles.queueItem
                                             }
                                         >
-                                            <input
-                                                type="text"
-                                                className={
-                                                    styles.chatInput
-                                                }
-                                                placeholder="YouTube URL or video ID"
-                                                value={
-                                                    queueVideoInput
-                                                }
-                                                onChange={(
-                                                    e
-                                                ) =>
-                                                    setQueueVideoInput(
-                                                        e.target
-                                                            .value
-                                                    )
-                                                }
-                                            />
+                                            <span>
+                                                {item}
+                                            </span>
 
                                             <button
                                                 className={
-                                                    styles.sendButton
+                                                    styles.smallButton
                                                 }
-                                                onClick={
-                                                    handleAddToQueue
+                                                onClick={() =>
+                                                    removeFromQueue(
+                                                        index
+                                                    )
+                                                }
+                                                disabled={
+                                                    !canControl
                                                 }
                                             >
-                                                Add
+                                                Remove
                                             </button>
                                         </div>
-                                    )}
-
-                                    {queue.length ===
-                                    0 ? (
-                                        <div
-                                            className={
-                                                styles.emptyQueue
-                                            }
-                                        >
-                                            No videos in queue
-                                        </div>
-                                    ) : (
-                                        <div
-                                            className={
-                                                styles.queueList
-                                            }
-                                        >
-                                            {queue.map(
-                                                (
-                                                    queuedVideo,
-                                                    index
-                                                ) => (
-                                                    <div
-                                                        className={
-                                                            styles.queueItem
-                                                        }
-                                                        key={`${queuedVideo}-${index}`}
-                                                    >
-                                                        <div
-                                                            className={
-                                                                styles.queueInfo
-                                                            }
-                                                        >
-                                                            <span
-                                                                className={
-                                                                    styles.queueNumber
-                                                                }
-                                                            >
-                                                                {index +
-                                                                    1}
-                                                            </span>
-
-                                                            <span
-                                                                className={
-                                                                    styles.queueVideo
-                                                                }
-                                                            >
-                                                                {
-                                                                    queuedVideo
-                                                                }
-                                                            </span>
-                                                        </div>
-
-                                                        {canControl && (
-                                                            <button
-                                                                className={
-                                                                    styles.queueRemove
-                                                                }
-                                                                onClick={() =>
-                                                                    handleRemoveFromQueue(
-                                                                        index
-                                                                    )
-                                                                }
-                                                            >
-                                                                ×
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                )
-                                            )}
-                                        </div>
-                                    )}
-
-                                    <button
-                                        className={
-                                            styles.leaveButton
-                                        }
-                                        onClick={
-                                            handleLeaveRoom
-                                        }
-                                    >
-                                        Leave Room
-                                    </button>
-                                </div>
+                                    )
+                                )
                             )}
                         </div>
-                    ) : (
-                        <button
+                    </section>
+
+                    <section
+                        className={
+                            styles.card
+                        }
+                    >
+                        <h2>
+                            Room Vibe
+                        </h2>
+
+                        <div
                             className={
-                                styles.openSidebar
-                            }
-                            onClick={() =>
-                                setShowSidebar(
-                                    true
-                                )
+                                styles.vibeButtons
                             }
                         >
-                            Room
-                        </button>
-                    )}
-                </div>
+                            {[
+                                "Normal",
+                                "Movie Night",
+                                "Late Night",
+                                "Party",
+                                "Romantic",
+                                "Chill",
+                                "Workplace"
+                            ].map(
+                                (
+                                    item
+                                ) => (
+                                    <button
+                                        key={
+                                            item
+                                        }
+                                        className={`${styles.vibeButton} ${
+                                            vibe ===
+                                            item
+                                                ? styles.activeVibe
+                                                : ""
+                                        }`}
+                                        onClick={() =>
+                                            changeVibe(
+                                                item
+                                            )
+                                        }
+                                        disabled={
+                                            !isHost
+                                        }
+                                    >
+                                        {
+                                            item
+                                        }
+                                    </button>
+                                )
+                            )}
+                        </div>
+                    </section>
+
+                    <section
+                        className={
+                            styles.card
+                        }
+                    >
+                        <h2>
+                            Chat
+                        </h2>
+
+                        <div
+                            className={
+                                styles.chatBox
+                            }
+                        >
+                            {messages.length ===
+                            0 ? (
+                                <p
+                                    className={
+                                        styles.empty
+                                    }
+                                >
+                                    No messages yet
+                                </p>
+                            ) : (
+                                messages.map(
+                                    (
+                                        message,
+                                        index
+                                    ) => (
+                                        <div
+                                            key={
+                                                index
+                                            }
+                                            className={
+                                                styles.message
+                                            }
+                                        >
+                                            <strong>
+                                                {
+                                                    message.username
+                                                }
+                                            </strong>
+
+                                            <span>
+                                                {
+                                                    message.message
+                                                }
+                                            </span>
+                                        </div>
+                                    )
+                                )
+                            )}
+                        </div>
+
+                        <div
+                            className={
+                                styles.inputRow
+                            }
+                        >
+                            <input
+                                className={
+                                    styles.input
+                                }
+                                value={
+                                    messageInput
+                                }
+                                onChange={(
+                                    e
+                                ) =>
+                                    setMessageInput(
+                                        e.target
+                                            .value
+                                    )
+                                }
+                                onKeyDown={(
+                                    e
+                                ) => {
+                                    if (
+                                        e.key ===
+                                        "Enter"
+                                    ) {
+                                        sendMessage();
+                                    }
+                                }}
+                                placeholder="Type a message..."
+                            />
+
+                            <button
+                                className={
+                                    styles.button
+                                }
+                                onClick={
+                                    sendMessage
+                                }
+                            >
+                                Send
+                            </button>
+                        </div>
+
+                        <div
+                            className={
+                                styles.reactions
+                            }
+                        >
+                            {[
+                                "❤️",
+                                "😂",
+                                "🔥",
+                                "👏",
+                                "😮",
+                                "👍"
+                            ].map(
+                                (
+                                    reaction
+                                ) => (
+                                    <button
+                                        key={
+                                            reaction
+                                        }
+                                        className={
+                                            styles.reactionButton
+                                        }
+                                        onClick={() =>
+                                            sendReaction(
+                                                reaction
+                                            )
+                                        }
+                                    >
+                                        {
+                                            reaction
+                                        }
+                                    </button>
+                                )
+                            )}
+                        </div>
+
+                        <div
+                            className={
+                                styles.floatingReactions
+                            }
+                        >
+                            {reactions.map(
+                                (
+                                    reaction
+                                ) => (
+                                    <span
+                                        key={
+                                            reaction.id
+                                        }
+                                    >
+                                        {
+                                            reaction.reaction
+                                        }
+                                    </span>
+                                )
+                            )}
+                        </div>
+                    </section>
+                </main>
+
+                <aside
+                    className={
+                        styles.sidebar
+                    }
+                >
+                    <section
+                        className={
+                            styles.card
+                        }
+                    >
+                        <h2>
+                            Participants
+                        </h2>
+
+                        <div
+                            className={
+                                styles.participants
+                            }
+                        >
+                            {participants.map(
+                                (
+                                    participant
+                                ) => (
+                                    <div
+                                        key={
+                                            participant.userId ||
+                                            participant.socketId
+                                        }
+                                        className={
+                                            styles.participant
+                                        }
+                                    >
+                                        <div
+                                            className={
+                                                styles.participantInfo
+                                            }
+                                        >
+                                            <div
+                                                className={
+                                                    styles.avatar
+                                                }
+                                            >
+                                                {(
+                                                    participant.username ||
+                                                    "U"
+                                                )
+                                                    .charAt(
+                                                        0
+                                                    )
+                                                    .toUpperCase()}
+                                            </div>
+
+                                            <div>
+                                                <div
+                                                    className={
+                                                        styles.username
+                                                    }
+                                                >
+                                                    {
+                                                        participant.username
+                                                    }
+
+                                                    {participant.userId ===
+                                                        currentUserId && (
+                                                        <span
+                                                            className={
+                                                                styles.you
+                                                            }
+                                                        >
+                                                            You
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <span
+                                                    className={`${styles.role} ${
+                                                        participant.role ===
+                                                        "Host"
+                                                            ? styles.hostRole
+                                                            : participant.role ===
+                                                              "Moderator"
+                                                            ? styles.moderatorRole
+                                                            : styles.participantRole
+                                                    }`}
+                                                >
+                                                    {
+                                                        participant.role
+                                                    }
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {isHost &&
+                                            participant.userId !==
+                                                currentUserId && (
+                                                <div
+                                                    className={
+                                                        styles.participantActions
+                                                    }
+                                                >
+                                                    <select
+                                                        className={
+                                                            styles.roleSelect
+                                                        }
+                                                        value={
+                                                            participant.role
+                                                        }
+                                                        onChange={(
+                                                            e
+                                                        ) =>
+                                                            assignRole(
+                                                                participant.userId,
+                                                                e
+                                                                    .target
+                                                                    .value
+                                                            )
+                                                        }
+                                                    >
+                                                        <option value="Participant">
+                                                            Participant
+                                                        </option>
+
+                                                        <option value="Moderator">
+                                                            Moderator
+                                                        </option>
+
+                                                        <option value="Host">
+                                                            Host
+                                                        </option>
+                                                    </select>
+
+                                                    <button
+                                                        className={
+                                                            styles.removeButton
+                                                        }
+                                                        onClick={() =>
+                                                            removeParticipant(
+                                                                participant.userId
+                                                            )
+                                                        }
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            )}
+                                    </div>
+                                )
+                            )}
+                        </div>
+                    </section>
+
+                    <section
+                        className={
+                            styles.card
+                        }
+                    >
+                        <h2>
+                            Room Info
+                        </h2>
+
+                        <div
+                            className={
+                                styles.infoRow
+                            }
+                        >
+                            <span>
+                                Room
+                            </span>
+
+                            <strong>
+                                {roomId ||
+                                    "-"}
+                            </strong>
+                        </div>
+
+                        <div
+                            className={
+                                styles.infoRow
+                            }
+                        >
+                            <span>
+                                Vibe
+                            </span>
+
+                            <strong>
+                                {vibe}
+                            </strong>
+                        </div>
+
+                        <div
+                            className={
+                                styles.infoRow
+                            }
+                        >
+                            <span>
+                                Status
+                            </span>
+
+                            <strong>
+                                {playState ===
+                                "playing"
+                                    ? "Playing"
+                                    : "Paused"}
+                            </strong>
+                        </div>
+                    </section>
+                </aside>
             </div>
+
+            {!roomId && (
+                <div
+                    className={
+                        styles.joinOverlay
+                    }
+                >
+                    <div
+                        className={
+                            styles.joinCard
+                        }
+                    >
+                        <h1>
+                            Watch Party
+                        </h1>
+
+                        <input
+                            className={
+                                styles.input
+                            }
+                            value={
+                                username
+                            }
+                            onChange={(
+                                e
+                            ) =>
+                                setUsername(
+                                    e.target
+                                        .value
+                                )
+                            }
+                            placeholder="Your name"
+                        />
+
+                        <input
+                            className={
+                                styles.input
+                            }
+                            value={
+                                roomId
+                            }
+                            onChange={(
+                                e
+                            ) =>
+                                setRoomId(
+                                    e.target
+                                        .value
+                                )
+                            }
+                            placeholder="Room code"
+                        />
+
+                        <input
+                            className={
+                                styles.input
+                            }
+                            value={
+                                roomName
+                            }
+                            onChange={(
+                                e
+                            ) =>
+                                setRoomName(
+                                    e.target
+                                        .value
+                                )
+                            }
+                            placeholder="Room name"
+                        />
+
+                        <input
+                            className={
+                                styles.input
+                            }
+                            value={
+                                videoInput
+                            }
+                            onChange={(
+                                e
+                            ) =>
+                                setVideoInput(
+                                    e.target
+                                        .value
+                                )
+                            }
+                            placeholder="YouTube URL for new room"
+                        />
+
+                        <div
+                            className={
+                                styles.joinButtons
+                            }
+                        >
+                            <button
+                                className={`${styles.button} ${styles.primaryButton}`}
+                                onClick={
+                                    createRoom
+                                }
+                            >
+                                Create Room
+                            </button>
+
+                            <button
+                                className={`${styles.button} ${styles.secondaryButton}`}
+                                onClick={
+                                    joinRoom
+                                }
+                            >
+                                Join Room
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
